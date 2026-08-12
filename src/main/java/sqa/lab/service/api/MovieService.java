@@ -3,7 +3,7 @@ package sqa.lab.service.api;
 import java.time.LocalDate;
 import java.util.List;
 
-import sqa.lab.service.Movie;
+import sqa.lab.model.Movie;
 
 
 

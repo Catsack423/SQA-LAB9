@@ -4,10 +4,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import sqa.lab.model.Movie;
 import sqa.lab.service.api.MovieService;
 
 public class NowPlaying {
-
+	
 	private MovieService movieService;
 
 	public NowPlaying(MovieService movieService) {

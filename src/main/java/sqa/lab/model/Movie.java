@@ -1,4 +1,4 @@
-package sqa.lab.service;
+package sqa.lab.model;
 
 public class Movie {
 
