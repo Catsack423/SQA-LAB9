@@ -3,47 +3,39 @@ package sqa.lab.service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import sqa.lab.repository.MovieRepository;
 import sqa.lab.repository.SeatRepository;
-import sqa.lab.repository.ShowTimeRepository;
 import sqa.lab.service.api.TicketSellerService;
+import sqa.lab.service.exception.AddPointFailedException;
+import sqa.lab.service.exception.OutOfStockException;
+import sqa.lab.service.exception.ShowtimeNotAvailableException;
 
 public class MovieCashierService implements TicketSellerService {
-    private MovieRepository movieRepo;
-    private ShowTimeRepository showtimeRepo;
-    private SeatRepository seatRepo;
 
-    MovieCashierService(MovieRepository mRepository, ShowTimeRepository showTimeRepository,
-            SeatRepository seatRepository) {
-        this.movieRepo = mRepository;
-        this.showtimeRepo = showTimeRepository;
-        this.seatRepo = seatRepository;
+    private SeatReservationService seatReservationService;
+    private MemberCustomerService memberCustomerService;
+
+    MovieCashierService(SeatReservationService seatReservationService,
+            MemberCustomerService memberCustomerService) {
+        this.memberCustomerService = memberCustomerService;
+        this.seatReservationService = seatReservationService;
+    }
+
+    @Override
+    public void buyTicket(String movie, LocalDate day, LocalDateTime showtime, String seatId) throws OutOfStockException, ShowtimeNotAvailableException {
+
+        int id = seatReservationService.addSeatReservation(movie, showtime, seatId, day);
+        System.out.println("Succeed " + id);
 
     }
 
-    public void buyTicket(String movie, LocalDate today, LocalDateTime showtime, String seatId) {
-        seatId = seatId.toUpperCase();
-        var listMovies = movieRepo.getAllMovieAvailableByDate(today);
-
-        boolean isMovieValid = listMovies.contains(movie);
-
-        if (!isMovieValid) {
-            throw new Error("Does't have this Movie in This Day ");
+    @Override
+    public void buyTicketAndAddPoint(String movie, LocalDate today, LocalDateTime showtime, String seatId,
+            int customerId) throws OutOfStockException, AddPointFailedException, ShowtimeNotAvailableException {
+        buyTicket(movie, today, showtime, seatId);
+        try {
+            memberCustomerService.addPointToMember(customerId);
+        } catch (Throwable e) {
+            throw new AddPointFailedException("Cant not add point to Customer");
         }
-        var listshowtime = showtimeRepo.getAllShowTimesByMovieAndDate(movie, today);
-
-        boolean isValidShowTime = listshowtime.contains(showtime);
-
-        if (!isValidShowTime) {
-            throw new Error("This Movie dont have this Showtime");
-        }
-
-        if (!seatRepo.isSeatAvailableBySeatId(movie, showtime, seatId)) {
-            throw new Error("This SeatId is already Reserved!!");
-        }
-
-        int id = seatRepo.addNewReserveFormMovieAndShowtimeAndSeatId(movie, showtime, seatId);
-        System.out.println("Succeed " + id);
-        return;
     }
 }
